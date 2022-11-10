@@ -99,20 +99,36 @@ local function mark_jump_targets_line(buf_handle, win_handle, regex, line_contex
       e = e + 1
     end
 
-    for _, v in pairs(hint_position) do
+    if type(hint_position) == "number" then
       local colp = col + b
-      if v == hint.HintPosition.MIDDLE then
-        colp = col + math.floor((b + e) / 2)
-      elseif v == hint.HintPosition.END then
-        colp = col + e - 1
+        if hint_position == hint.HintPosition.MIDDLE then
+          colp = col + math.floor((b + e) / 2)
+        elseif hint_position == hint.HintPosition.END then
+          colp = col + e - 1
+        end
+        jump_targets[#jump_targets + 1] = {
+          line = line_context.line_nr,
+          column = math.max(1, colp + col_offset + col_bias),
+          length = math.max(0, matched_length),
+          buffer = buf_handle,
+          window = win_handle,
+        }
+    else
+      for _, v in pairs(hint_position) do
+        local colp = col + b
+        if v == hint.HintPosition.MIDDLE then
+          colp = col + math.floor((b + e) / 2)
+        elseif v == hint.HintPosition.END then
+          colp = col + e - 1
+        end
+        jump_targets[#jump_targets + 1] = {
+          line = line_context.line_nr,
+          column = math.max(1, colp + col_offset + col_bias),
+          length = math.max(0, matched_length),
+          buffer = buf_handle,
+          window = win_handle,
+        }
       end
-      jump_targets[#jump_targets + 1] = {
-        line = line_context.line_nr,
-        column = math.max(1, colp + col_offset + col_bias),
-        length = math.max(0, matched_length),
-        buffer = buf_handle,
-        window = win_handle,
-      }
     end
 
     if regex.oneshot then
